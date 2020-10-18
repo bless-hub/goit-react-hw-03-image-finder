@@ -4,6 +4,7 @@ import Searchbar from "./components/Searchbar/Searchbar";
 import ImageGallery from "./components/ImageGallery/ImageGallery";
 import Loader from "./components/Loader/Loader";
 import Button from "./components/Button/Button";
+import Modal from "./components/Modal/Modal";
 
 import style from "./App.module.css";
 
@@ -14,9 +15,8 @@ export default class App extends Component {
     visibleImages: [],
     searchQuery: "",
     page: 1,
-    largeImage: null,
     isLoading: false,
-    openModal: null,
+    openModal: false,
     error: null,
   };
 
@@ -58,20 +58,25 @@ export default class App extends Component {
     this.setState({ searchQuery: query, page: 1, visibleImages: [] });
   };
 
-  toggleLoading = () => {
-    this.setState(({ isLoading }) => ({ isLoading: !isLoading }));
+  // =====================MODAL==================================
+  openModal = (modalImage) => {
+    this.setState({ openModal: true, modalImage });
+    window.addEventListener("keydown", this.closeModal);
   };
 
+  closeModal = (evt) => {
+    if (evt.target === evt.currentTarget || evt.keyCode === 27)
+      this.setState({ openModal: false });
+    window.removeEventListener("keydown", this.closeModal);
+  };
+  //================================================================
+
   render() {
-    const { visibleImages, isLoading } = this.state;
+    const { visibleImages, isLoading, openModal, modalImage } = this.state;
     return (
       <div className={style.App}>
         <Searchbar onSubmit={this.handleSerarchQueryForm} />
-        <ImageGallery
-          images={visibleImages}
-          // onClick={this.toggleModal}
-          // onItemClick={this.modalContentSet}
-        />
+        <ImageGallery images={visibleImages} openModal={this.openModal} />
         {isLoading && (
           <div className="Loader">
             <Loader />
@@ -79,6 +84,9 @@ export default class App extends Component {
         )}
         {visibleImages.length > 0 && !isLoading && (
           <Button loadMore={this.fetchImages} />
+        )}
+        {openModal && (
+          <Modal modalImage={modalImage} closeModal={this.closeModal} />
         )}
       </div>
     );
